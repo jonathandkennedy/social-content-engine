@@ -1,0 +1,331 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Design Carousels — Preview &amp; Feedback</title>
+<!--
+  ──────────────────────────────────────────────────────────────────────────
+  HOW TO USE THIS FILE
+  1. This is a standalone review page. Double-click to open it in any browser,
+     or send the file to a client/boss/partner — no login, no server needed.
+  2. Reviewers type notes per slide or for a whole carousel and set a status
+     (Approve / Request changes). Everything auto-saves to their browser, so a
+     refresh never loses notes.
+  3. They click "Copy All Feedback" to copy one clean block, then paste it back
+     to you (or straight into Claude Code) to regenerate.
+  4. To load YOUR content: replace the CAROUSELS array near the bottom. Your
+     carousel skill will eventually regenerate this whole file with real data
+     and rendered slide images injected automatically.
+  ──────────────────────────────────────────────────────────────────────────
+-->
+<style>
+  :root{
+    --bg:#0d0d10; --panel:#16161c; --panel-2:#1d1d25; --line:#2a2a35;
+    --text:#e9e9ef; --muted:#9a9aab; --accent:#a78bfa; --accent-2:#7c5cff;
+    --ok:#34d399; --ok-bg:#0f2d24; --warn:#fbbf24; --warn-bg:#332708;
+    --card:#202028; --radius:14px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{
+    background:var(--bg); color:var(--text);
+    font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    padding:0 0 120px;
+  }
+  a{color:var(--accent)}
+
+  /* ---- Top bar ---- */
+  header{
+    position:sticky; top:0; z-index:20; background:rgba(13,13,16,.92);
+    backdrop-filter:saturate(140%) blur(8px); border-bottom:1px solid var(--line);
+    padding:18px 24px 14px;
+  }
+  .title{font-size:24px; font-weight:800; letter-spacing:-.01em}
+  .title .hl{color:var(--accent)}
+  .sub{color:var(--muted); font-size:13px; margin-top:4px}
+  .toolbar{display:flex; align-items:center; gap:10px; margin-top:14px; flex-wrap:wrap}
+  button{
+    font:inherit; font-weight:600; border:1px solid var(--line); background:var(--panel-2);
+    color:var(--text); padding:9px 14px; border-radius:10px; cursor:pointer;
+  }
+  button:hover{border-color:#3a3a48}
+  button.primary{background:linear-gradient(180deg,var(--accent),var(--accent-2)); border-color:transparent; color:#fff}
+  button.ghost{background:transparent}
+  .badge{
+    margin-left:2px; background:var(--panel-2); border:1px solid var(--line);
+    color:var(--muted); padding:7px 11px; border-radius:999px; font-size:13px; font-weight:600;
+  }
+  .badge b{color:var(--accent)}
+  .saved{color:var(--muted); font-size:12px; margin-left:auto}
+
+  /* ---- Layout ---- */
+  main{max-width:1180px; margin:0 auto; padding:26px 24px}
+  .section-head{
+    text-transform:uppercase; letter-spacing:.08em; font-size:13px; font-weight:700;
+    color:var(--accent); margin:34px 0 14px; padding-bottom:8px; border-bottom:1px solid var(--line);
+  }
+  .section-head:first-child{margin-top:6px}
+
+  /* ---- Carousel block ---- */
+  .carousel{background:var(--panel); border:1px solid var(--line); border-radius:var(--radius); padding:16px; margin-bottom:18px}
+  .carousel.approved{border-color:#1f5e49}
+  .carousel.changes{border-color:#7a5a12}
+  .c-head{display:flex; align-items:flex-start; gap:14px; flex-wrap:wrap}
+  .c-name{font-weight:700; font-size:16px}
+  .c-meta{color:var(--muted); font-size:12px; margin-top:2px}
+  .status{display:flex; gap:8px; margin-left:auto}
+  .status button{padding:7px 12px; border-radius:999px; font-size:13px}
+  .status .approve.on{background:var(--ok-bg); border-color:#1f5e49; color:var(--ok)}
+  .status .changes.on{background:var(--warn-bg); border-color:#7a5a12; color:var(--warn)}
+
+  .c-note{margin-top:12px}
+  label.lbl{display:block; font-size:12px; color:var(--muted); margin:0 0 5px}
+  textarea{
+    width:100%; resize:vertical; min-height:42px; background:var(--panel-2); color:var(--text);
+    border:1px solid var(--line); border-radius:10px; padding:9px 11px; font:inherit;
+  }
+  textarea:focus{outline:none; border-color:var(--accent)}
+  textarea.has{border-color:#4a4a5e}
+
+  /* ---- Slides ---- */
+  .slides{display:flex; gap:14px; overflow-x:auto; padding:14px 2px 4px; margin-top:8px}
+  .slide{flex:0 0 200px; width:200px}
+  .thumb{
+    position:relative; width:200px; height:250px; border-radius:12px; overflow:hidden;
+    border:1px solid var(--line); background:var(--card); display:flex; align-items:center; justify-content:center;
+  }
+  .thumb img{width:100%; height:100%; object-fit:cover; display:block}
+  .thumb .placeholder{padding:16px; text-align:center}
+  .thumb .placeholder .k{font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--muted)}
+  .thumb .placeholder .h{font-weight:800; font-size:18px; margin-top:8px; line-height:1.2}
+  .snum{position:absolute; top:8px; left:8px; background:rgba(0,0,0,.65); color:#fff; font-size:11px; font-weight:700; padding:3px 7px; border-radius:6px}
+  .slide textarea{margin-top:8px; min-height:36px; font-size:13px}
+  .slide .lbl{margin-top:8px}
+
+  footer{max-width:1180px; margin:30px auto 0; padding:0 24px; color:var(--muted); font-size:12px}
+
+  /* toast */
+  #toast{position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(20px);
+    background:var(--accent-2); color:#fff; padding:12px 18px; border-radius:12px; font-weight:600;
+    opacity:0; transition:.25s; pointer-events:none; z-index:50}
+  #toast.show{opacity:1; transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+<header>
+  <div class="title">Design Carousels <span class="hl">Preview &amp; Feedback</span></div>
+  <div class="sub" id="subline">Loading…</div>
+  <div class="toolbar">
+    <button class="primary" onclick="copyAll()">Copy All Feedback</button>
+    <button class="ghost" onclick="clearAll()">Clear All</button>
+    <span class="badge"><b id="noteCount">0</b> notes</span>
+    <span class="badge"><b id="apprCount">0</b> approved</span>
+    <span class="saved">Auto-saved to your browser · refresh-safe</span>
+  </div>
+</header>
+
+<main id="app"></main>
+
+<footer>
+  Tip: set a status and leave notes, then hit <b>Copy All Feedback</b> and paste it back to the creator.
+</footer>
+
+<div id="toast"></div>
+
+<script>
+/* ============================================================
+   YOUR CONTENT — replace this array (your carousel skill will
+   regenerate this file with real data + slide image paths).
+   Slide.image is optional: if omitted, a styled placeholder
+   using slide.heading is shown so the layout still works.
+   ============================================================ */
+const PROJECT = {
+  client: "Sample Client",
+  generatedAt: "2026-05-24",
+};
+
+const CAROUSELS = [
+  {
+    id: "lp-roundup",
+    section: "FUNNEL — LANDING PAGES",
+    name: "Editorial Roundup",
+    slides: [
+      { heading: "Claude Design — Landing Page Sections", kind: "Cover" },
+      { heading: "1. Hero Section", kind: "Slide" },
+      { heading: "2. Social Proof", kind: "Slide" },
+      { heading: "3. Pricing", kind: "Slide" },
+      { heading: "4. FAQ", kind: "Slide" },
+    ],
+  },
+  {
+    id: "lp-sequential",
+    section: "FUNNEL — LANDING PAGES",
+    name: "Editorial Sequential",
+    slides: [
+      { heading: "Claude Code Now Builds Landing Pages in 30 Seconds", kind: "Cover" },
+      { heading: "Open claude.ai/design. Click Prototype.", kind: "Slide" },
+      { heading: "Describe your page in one sentence.", kind: "Slide" },
+      { heading: "Click Create. Your page is live.", kind: "Slide" },
+      { heading: "Three steps. Thirty seconds. A complete landing page.", kind: "CTA" },
+    ],
+  },
+  {
+    id: "reel-hooks",
+    section: "ORGANIC — SHORT FORM",
+    name: "Hook Pack — Vibe Marketing",
+    slides: [
+      { heading: "Stop making content one platform at a time.", kind: "Cover" },
+      { heading: "One source → 8 assets.", kind: "Slide" },
+      { heading: "Carousels. Reels. Captions. Threads.", kind: "Slide" },
+      { heading: "Comment BATCH for the setup.", kind: "CTA" },
+    ],
+  },
+];
+
+/* ============================================================
+   App logic (no dependencies)
+   ============================================================ */
+const STORE_KEY = "carousel_feedback_v1";
+const state = load();
+
+function load(){
+  try { return JSON.parse(localStorage.getItem(STORE_KEY)) || {}; }
+  catch { return {}; }
+}
+function save(){
+  localStorage.setItem(STORE_KEY, JSON.stringify(state));
+  refreshCounts();
+}
+function entry(id){ return state[id] || (state[id] = { status:"", carouselNote:"", slides:{} }); }
+
+const palette = ["#7c5cff","#ec4899","#f59e0b","#10b981","#3b82f6","#ef4444"];
+function colorFor(i){ return palette[i % palette.length]; }
+
+function render(){
+  const app = document.getElementById("app");
+  const count = CAROUSELS.length;
+  document.getElementById("subline").textContent =
+    `${count} carousels · client: ${PROJECT.client} · generated ${PROJECT.generatedAt}. Type notes per slide or per carousel, set a status, then hit “Copy All Feedback”.`;
+
+  let html = "", lastSection = null, ci = 0;
+  for (const c of CAROUSELS){
+    if (c.section !== lastSection){ html += `<div class="section-head">${esc(c.section)}</div>`; lastSection = c.section; }
+    const e = entry(c.id);
+    const cls = e.status === "approve" ? "approved" : e.status === "changes" ? "changes" : "";
+    html += `<div class="carousel ${cls}" id="car-${c.id}">
+      <div class="c-head">
+        <div>
+          <div class="c-name">${esc(c.name)}</div>
+          <div class="c-meta">${c.slides.length} slides</div>
+        </div>
+        <div class="status">
+          <button class="approve ${e.status==='approve'?'on':''}" onclick="setStatus('${c.id}','approve')">✓ Approve</button>
+          <button class="changes ${e.status==='changes'?'on':''}" onclick="setStatus('${c.id}','changes')">✎ Request changes</button>
+        </div>
+      </div>
+      <div class="c-note">
+        <label class="lbl">Note for the whole carousel (e.g. “regenerate hooks with a brighter palette”)</label>
+        <textarea class="${e.carouselNote?'has':''}" data-car="${c.id}" data-kind="carousel"
+          oninput="onNote(this)" placeholder="Whole-carousel feedback…">${esc(e.carouselNote)}</textarea>
+      </div>
+      <div class="slides">`;
+
+    c.slides.forEach((s, i) => {
+      const note = (e.slides[i] || "");
+      const visual = s.image
+        ? `<img src="${esc(s.image)}" alt="">`
+        : `<div class="placeholder" style="background:linear-gradient(160deg,${colorFor(ci+i)}22,#0000)">
+             <div class="k">${esc(s.kind||"Slide")}</div>
+             <div class="h">${esc(s.heading||"")}</div>
+           </div>`;
+      html += `<div class="slide">
+        <div class="thumb"><span class="snum">${String(i+1).padStart(2,"0")}</span>${visual}</div>
+        <label class="lbl">Slide ${i+1} note</label>
+        <textarea class="${note?'has':''}" data-car="${c.id}" data-kind="slide" data-idx="${i}"
+          oninput="onNote(this)" placeholder="Note…">${esc(note)}</textarea>
+      </div>`;
+    });
+
+    html += `</div></div>`;
+    ci += c.slides.length;
+  }
+  app.innerHTML = html;
+  refreshCounts();
+}
+
+function onNote(el){
+  const id = el.dataset.car, e = entry(id);
+  if (el.dataset.kind === "carousel") e.carouselNote = el.value;
+  else e.slides[el.dataset.idx] = el.value;
+  el.classList.toggle("has", !!el.value.trim());
+  save();
+}
+function setStatus(id, status){
+  const e = entry(id);
+  e.status = (e.status === status) ? "" : status;
+  save();
+  const el = document.getElementById("car-"+id);
+  el.classList.toggle("approved", e.status==="approve");
+  el.classList.toggle("changes", e.status==="changes");
+  el.querySelector(".approve").classList.toggle("on", e.status==="approve");
+  el.querySelector(".changes").classList.toggle("on", e.status==="changes");
+}
+
+function refreshCounts(){
+  let notes = 0, appr = 0;
+  for (const c of CAROUSELS){
+    const e = state[c.id]; if (!e) continue;
+    if (e.status === "approve") appr++;
+    if (e.carouselNote && e.carouselNote.trim()) notes++;
+    notes += Object.values(e.slides||{}).filter(v => v && v.trim()).length;
+  }
+  document.getElementById("noteCount").textContent = notes;
+  document.getElementById("apprCount").textContent = appr;
+}
+
+function copyAll(){
+  const lines = [`CAROUSEL FEEDBACK — ${PROJECT.client} — ${new Date().toLocaleString()}`, ""];
+  let any = false;
+  for (const c of CAROUSELS){
+    const e = state[c.id]; if (!e) continue;
+    const slideNotes = Object.entries(e.slides||{}).filter(([,v]) => v && v.trim());
+    const has = e.status || (e.carouselNote && e.carouselNote.trim()) || slideNotes.length;
+    if (!has) continue;
+    any = true;
+    const statusTxt = e.status === "approve" ? "APPROVED" : e.status === "changes" ? "REQUEST CHANGES" : "no status";
+    lines.push(`## ${c.section} / ${c.name} — ${statusTxt}`);
+    if (e.carouselNote && e.carouselNote.trim()) lines.push(`Whole carousel: ${e.carouselNote.trim()}`);
+    slideNotes
+      .sort((a,b) => a[0]-b[0])
+      .forEach(([i,v]) => lines.push(`- Slide ${Number(i)+1}: ${v.trim()}`));
+    lines.push("");
+  }
+  if (!any){ toast("No feedback yet — add notes or set a status first."); return; }
+  const text = lines.join("\n");
+  navigator.clipboard.writeText(text).then(
+    () => toast("Feedback copied — paste it back to the creator."),
+    () => { window.prompt("Copy this feedback:", text); }
+  );
+}
+
+function clearAll(){
+  if (!confirm("Clear all notes and statuses on this device?")) return;
+  for (const k of Object.keys(state)) delete state[k];
+  localStorage.removeItem(STORE_KEY);
+  render();
+  toast("Cleared.");
+}
+
+let toastT;
+function toast(msg){
+  const t = document.getElementById("toast");
+  t.textContent = msg; t.classList.add("show");
+  clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove("show"), 2200);
+}
+function esc(s){ return String(s==null?"":s).replace(/[&<>"]/g, m => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[m])); }
+
+render();
+</script>
+</body>
+</html>
